@@ -1,20 +1,52 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Personal Developer Portfolio
 
-# Run and deploy your AI Studio app
+A modern, responsive, and interactive personal developer portfolio built with React, Vite, and Tailwind CSS. This application showcases projects, skills, services, and professional experience with high-quality visual components and seamless interactivity.
 
-This contains everything you need to run your app locally.
+## ✨ Features
 
-View your app in AI Studio: https://ai.studio/apps/815961cd-fd8f-407c-b31e-51190c4e26e0
+*   **Interactive Hero Section:** Engaging introduction with a stylized profile card, gradient accents, and social links.
+*   **Dynamic Canvas Background:** Features a custom HTML5 canvas particle and atomic network background that reacts to cursor/touch movements.
+*   **Projects Matrix:** Clean grid showcasing featured projects with key metrics, tech stack tags, and links.
+*   **Services & Skills:** Highlights core competencies, development services, and tool proficiency.
+*   **Responsive Design:** Fully fluid layout that adapts beautifully to desktop, tablet, and mobile viewports.
+*   **Centralized Data:** Easily update personal information, projects, and skills through a single `src/data.ts` file.
 
-## Run Locally
+## 🛠️ Tech Stack
 
-**Prerequisites:**  Node.js
+*   **Framework:** React 18
+*   **Build Tool:** Vite
+*   **Styling:** Tailwind CSS
+*   **Icons:** Lucide React
+*   **Language:** TypeScript
 
+## 🚀 Getting Started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+To run this project locally, ensure you have Node.js (v18+) installed.
+
+### 1. Install Dependencies
+```bash
+npm install
+```
+
+### 2. Start Development Server
+```bash
+npm run dev
+```
+The application will start, and the development server will typically be available at `http://localhost:3000`.
+
+### 3. Build for Production
+```bash
+npm run build
+```
+The compiled, production-ready static assets will be output to the `dist` directory.
+
+## 📝 Customization
+
+You can personalize this portfolio without touching the core component logic. Simply open the `src/data.ts` file and update the following objects:
+
+*   `personalInfo`: Update your name, greeting, bio, contact email, and avatar.
+*   `services`: Define what professional services you offer.
+*   `projects`: Add or remove your case studies and portfolio works.
+*   `skills` & `allSkillsList`: Adjust your tech stack proficiency and experience levels.
+*   `experienceTimeline`: Detail your professional work history.
+*   `socialLinks`: Connect your GitHub, LinkedIn, Twitter/X, and other profiles.
