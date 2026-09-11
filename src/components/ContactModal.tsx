@@ -129,7 +129,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
                     rows={4}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Hi Arjun, let's discuss an upcoming web application project..."
+                    placeholder="Hi Mustafa, let's discuss an upcoming web application project..."
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:bg-white transition-all resize-none"
                   />
                 </div>
