@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, Send, CheckCircle2, Mail, User, MessageSquare } from 'lucide-react';
-import { personalInfo } from '../data';
+import { X, Send, CheckCircle2, Mail, User, MessageSquare, AlertCircle } from 'lucide-react';
+import { usePortfolio } from '../context/PortfolioContext';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -8,23 +8,31 @@ interface ContactModalProps {
 }
 
 export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
+  const { profile, sendContactMessage } = usePortfolio();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setSubmitError(null);
+
+    const success = await sendContactMessage({ name, email, message });
+    setIsSubmitting(false);
+
+    if (success) {
       setSubmitted(true);
-    }, 600);
+    } else {
+      setSubmitError('Failed to deliver message to the server. Please try again.');
+    }
   };
 
   const handleReset = () => {
@@ -32,6 +40,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
     setName('');
     setEmail('');
     setMessage('');
+    setSubmitError(null);
     onClose();
   };
 
@@ -59,10 +68,10 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
             <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mb-4 shadow-sm">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900">Message Sent Successfully!</h3>
+            <h3 className="text-xl font-bold text-slate-900">Message Received!</h3>
             <p className="text-sm text-slate-600 max-w-sm mt-2 leading-relaxed">
-              Thank you for reaching out, {name}. I've received your note and will get back to you at{' '}
-              <span className="font-semibold text-slate-800">{email}</span> within 24 hours.
+              Thank you, {name}. Your note has been safely stored in the database. I will review and reply to{' '}
+              <span className="font-semibold text-slate-800">{email}</span> shortly.
             </p>
             <button
               onClick={handleReset}
@@ -79,9 +88,16 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
               </span>
               <h2 className="text-2xl font-bold text-slate-900 mt-2">Send a Direct Message</h2>
               <p className="text-xs text-slate-500 mt-1">
-                Have a project in mind or want to collaborate? Fill out the form below.
+                Connecting directly with {profile?.name || 'Developer'}. Fill out the form below.
               </p>
             </div>
+
+            {submitError && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{submitError}</span>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -129,7 +145,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
                     rows={4}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Hi Mustafa, let's discuss an upcoming web application project..."
+                    placeholder="Hi, I'd like to discuss an upcoming web application project..."
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:bg-white transition-all resize-none"
                   />
                 </div>

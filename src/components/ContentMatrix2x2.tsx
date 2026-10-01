@@ -13,10 +13,9 @@ import {
   Linkedin,
   Twitter,
   Dribbble,
-  Sparkles,
   ArrowRight,
 } from 'lucide-react';
-import { skills, experienceTimeline, projects, personalInfo, socialLinks, allSkillsList } from '../data';
+import { usePortfolio } from '../context/PortfolioContext';
 import { ProjectItem } from '../types';
 
 interface ContentMatrix2x2Props {
@@ -28,36 +27,74 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
   onSelectProject,
   onOpenContact,
 }) => {
+  const { profile, projects, skills, experience } = usePortfolio();
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [showAllSkills, setShowAllSkills] = useState(false);
   const [showAllExperience, setShowAllExperience] = useState(false);
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText(personalInfo.email);
+    if (!profile?.email) return;
+    navigator.clipboard.writeText(profile.email);
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
   const getSocialIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Github':
+    switch (iconName?.toLowerCase()) {
+      case 'github':
         return <Github className="w-4 h-4" />;
-      case 'Linkedin':
+      case 'linkedin':
         return <Linkedin className="w-4 h-4" />;
-      case 'Twitter':
+      case 'twitter':
+      case 'x':
         return <Twitter className="w-4 h-4" />;
-      case 'Dribbble':
+      case 'dribbble':
         return <Dribbble className="w-4 h-4" />;
       default:
         return <ExternalLink className="w-4 h-4" />;
     }
   };
 
+  const getSkillBadge = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes('typescript') || n.includes('ts')) {
+      return <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">TS</span>;
+    }
+    if (n.includes('react')) {
+      return <span className="w-6 h-6 rounded-md bg-sky-500 text-white flex items-center justify-center text-xs font-bold">⚛</span>;
+    }
+    if (n.includes('next')) {
+      return <span className="w-6 h-6 rounded-md bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold">N</span>;
+    }
+    if (n.includes('tailwind')) {
+      return <span className="w-6 h-6 rounded-md bg-cyan-500 text-white flex items-center justify-center text-[11px] font-bold">≈</span>;
+    }
+    if (n.includes('node') || n.includes('javascript') || n.includes('js')) {
+      return <span className="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">JS</span>;
+    }
+    if (n.includes('mongo') || n.includes('sql') || n.includes('database')) {
+      return <span className="w-6 h-6 rounded-md bg-green-600 text-white flex items-center justify-center text-[9px] font-bold">DB</span>;
+    }
+    return <span className="w-6 h-6 rounded-md bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold">DEV</span>;
+  };
+
+  // Up to 6 primary skills for the progress bars
+  const primarySkills = skills.slice(0, 6);
+  // Top 3 featured or recent projects
   const featuredProjectsList = projects.slice(0, 3);
+
+  const socialLinks = profile?.socialLinks && profile.socialLinks.length > 0
+    ? profile.socialLinks
+    : [
+        { platform: 'GitHub', url: 'https://github.com', icon: 'Github', handle: '@github' },
+        { platform: 'LinkedIn', url: 'https://linkedin.com', icon: 'Linkedin', handle: 'in/dev' },
+        { platform: 'Twitter / X', url: 'https://x.com', icon: 'Twitter', handle: '@dev' },
+        { platform: 'Dribbble', url: 'https://dribbble.com', icon: 'Dribbble', handle: 'portfolio' },
+      ];
 
   return (
     <section id="about" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* 2x2 Responsive Grid: grid-cols-1 on mobile/tablet, grid-cols-2 on large screens */}
+      {/* 2x2 Responsive Grid */}
       <div id="content-2x2-grid" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* CARD 1: Top-Left - Skills Matrix */}
@@ -72,78 +109,59 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
                 <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
                   <Code className="w-4 h-4" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-800 tracking-tight">Skills</h3>
+                <h3 className="text-lg font-bold text-slate-800 tracking-tight">Skills & Tech Stack</h3>
               </div>
-              <button
-                id="btn-view-all-skills"
-                onClick={() => setShowAllSkills(!showAllSkills)}
-                className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors cursor-pointer"
-              >
-                <span>{showAllSkills ? 'Collapse' : 'View all'}</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </button>
+              {skills.length > 6 && (
+                <button
+                  id="btn-view-all-skills"
+                  onClick={() => setShowAllSkills(!showAllSkills)}
+                  className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors cursor-pointer"
+                >
+                  <span>{showAllSkills ? 'Collapse' : 'View all'}</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
             {/* Skills List with Proficiency Progress Bars */}
             <div className="mt-5 space-y-3.5">
-              {skills.map((skill) => {
-                const getSkillBadge = (id: string) => {
-                  switch (id) {
-                    case 'ts':
-                      return <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">TS</span>;
-                    case 'react':
-                      return <span className="w-6 h-6 rounded-md bg-sky-500 text-white flex items-center justify-center text-xs font-bold">⚛</span>;
-                    case 'next':
-                      return <span className="w-6 h-6 rounded-md bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold">N</span>;
-                    case 'tailwind':
-                      return <span className="w-6 h-6 rounded-md bg-cyan-500 text-white flex items-center justify-center text-[11px] font-bold">≈</span>;
-                    case 'node':
-                      return <span className="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">JS</span>;
-                    case 'postgres':
-                      return <span className="w-6 h-6 rounded-md bg-indigo-600 text-white flex items-center justify-center text-[9px] font-bold">SQL</span>;
-                    default:
-                      return <span className="w-6 h-6 rounded-md bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold">DEV</span>;
-                  }
-                };
-
-                return (
-                  <div key={skill.id} id={`skill-item-${skill.id}`} className="group">
-                    <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
-                      <div className="flex items-center gap-2.5">
-                        {getSkillBadge(skill.id)}
-                        <span className="text-slate-700 font-medium group-hover:text-slate-900 transition-colors">
-                          {skill.name}
-                        </span>
-                      </div>
-                      <span className="text-slate-500 font-mono text-xs">{skill.level}%</span>
+              {primarySkills.map((skill) => (
+                <div key={skill.id} id={`skill-item-${skill.id}`} className="group">
+                  <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+                    <div className="flex items-center gap-2.5">
+                      {getSkillBadge(skill.name)}
+                      <span className="text-slate-700 font-medium group-hover:text-slate-900 transition-colors">
+                        {skill.name}
+                      </span>
                     </div>
-
-                    {/* Gradient Progress Bar */}
-                    <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-600 transition-all duration-1000 ease-out"
-                        style={{ width: `${skill.level}%` }}
-                      />
-                    </div>
+                    <span className="text-slate-500 font-mono text-xs">{skill.level}%</span>
                   </div>
-                );
-              })}
+
+                  {/* Gradient Progress Bar */}
+                  <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-600 transition-all duration-1000 ease-out"
+                      style={{ width: `${skill.level}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* Expanded Skills Breakdown when "View all" is clicked */}
+            {/* Expanded Skills Breakdown */}
             {showAllSkills && (
               <div className="mt-5 pt-4 border-t border-slate-100 animate-fade-in">
                 <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">
-                  Full Tech Stack & Tools
+                  All Technical Skills & Tools
                 </h4>
                 <div className="grid grid-cols-2 gap-2">
-                  {allSkillsList.map((s, idx) => (
+                  {skills.map((s, idx) => (
                     <div
                       key={idx}
                       className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs"
                     >
                       <span className="font-medium text-slate-700 truncate">{s.name}</span>
-                      <span className="text-[11px] text-slate-500 font-mono">{s.experience}</span>
+                      <span className="text-[11px] text-slate-500 font-mono">{s.experience || `${s.level}%`}</span>
                     </div>
                   ))}
                 </div>
@@ -181,11 +199,8 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
 
             {/* Vertical Project Stack with connector line */}
             <div className="mt-5 relative">
-              {/* Connector line */}
-              <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-indigo-100 -z-0" />
-
               <div className="space-y-4">
-                {featuredProjectsList.map((proj, idx) => (
+                {featuredProjectsList.map((proj) => (
                   <div
                     key={proj.id}
                     id={`featured-proj-${proj.id}`}
@@ -193,7 +208,6 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
                     className="relative z-10 flex items-center justify-between p-3 rounded-2xl bg-white/60 hover:bg-white border border-slate-100 hover:border-indigo-100 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer group"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      {/* Thumbnail or bullet indicator */}
                       <div className="relative flex-shrink-0 w-12 h-10 rounded-xl overflow-hidden bg-slate-900 border border-slate-200">
                         <img
                           src={proj.image}
@@ -213,9 +227,11 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                      <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-medium text-slate-600">
-                        {proj.tags[0]}
-                      </span>
+                      {proj.tags && proj.tags[0] && (
+                        <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-medium text-slate-600">
+                          {proj.tags[0]}
+                        </span>
+                      )}
                       <span className="text-xs font-semibold text-slate-400">{proj.year}</span>
                       <ExternalLink className="w-3.5 h-3.5 text-slate-300 group-hover:text-indigo-600 transition-colors" />
                     </div>
@@ -252,11 +268,10 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
 
             {/* Connected Vertical Timeline Milestones */}
             <div className="mt-5 relative">
-              {/* Timeline continuous vertical track */}
               <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-indigo-500 via-purple-400 to-slate-200" />
 
               <div className="space-y-5">
-                {experienceTimeline.map((item) => (
+                {experience.map((item) => (
                   <div key={item.id} id={`exp-${item.id}`} className="relative flex items-start gap-4">
                     {/* Node Dot */}
                     <div className="relative z-10 flex-shrink-0 mt-1">
@@ -328,7 +343,7 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Mail className="w-4 h-4 text-indigo-600 flex-shrink-0" />
                     <span className="text-xs font-semibold text-slate-700 group-hover:text-indigo-700 truncate">
-                      {personalInfo.email}
+                      {profile?.email || 'developer@example.com'}
                     </span>
                   </div>
                   <button
@@ -346,7 +361,7 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
                 {/* Location */}
                 <div className="flex items-center gap-2.5 px-2.5 py-1 text-xs text-slate-600">
                   <MapPin className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                  <span className="font-medium">{personalInfo.location}</span>
+                  <span className="font-medium">{profile?.location || 'Remote'}</span>
                 </div>
 
                 {/* Availability status */}
@@ -355,7 +370,7 @@ export const ContentMatrix2x2: React.FC<ContentMatrix2x2Props> = ({
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                   </div>
-                  <span className="font-medium text-emerald-700">Available for new opportunities</span>
+                  <span className="font-medium text-emerald-700">{profile?.status || 'Available for work'}</span>
                 </div>
 
                 {/* Send Direct Message CTA Button */}

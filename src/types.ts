@@ -28,9 +28,10 @@ export interface SkillItem {
   id: string;
   name: string;
   level: number; // 0 to 100
-  category: 'frontend' | 'backend' | 'tools' | 'core';
-  icon: string;
-  color: string;
+  category: 'frontend' | 'backend' | 'tools' | 'core' | 'styling' | 'database' | 'devops' | string;
+  icon?: string;
+  color?: string;
+  experience?: string;
 }
 
 export interface ExperienceItem {
@@ -65,4 +66,14 @@ export interface PersonalInfo {
   status: string;
   avatar: string;
   resumeUrl: string;
+  socialLinks?: SocialLink[];
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  createdAt: string;
+  read?: boolean;
 }

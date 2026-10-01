@@ -1,12 +1,16 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Database } from 'lucide-react';
+import { usePortfolio } from '../context/PortfolioContext';
 
 interface NavbarProps {
   activeSection: string;
   onNavigate: (sectionId: string) => void;
+  onNavigateAdmin: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onNavigateAdmin }) => {
+  const { profile } = usePortfolio();
+
   const navItems = [
     { id: 'home', label: 'Home' },
     { id: 'about', label: 'About' },
@@ -14,17 +18,26 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
     { id: 'contact', label: 'Contact' },
   ];
 
+  const brandText = profile?.name
+    ? profile.name
+        .split(' ')
+        .map((p) => p[0])
+        .join('')
+        .slice(0, 3)
+        .toUpperCase()
+    : 'DEV';
+
   return (
     <header className="relative w-full pt-6 pb-2 px-4 sm:px-6 lg:px-8 z-30 transition-all duration-300">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Left: Brand Monogram "DEV" */}
+        {/* Left: Brand Monogram */}
         <div
           id="brand-logo"
           onClick={() => onNavigate('home')}
           className="cursor-pointer flex items-center gap-2 group select-none"
         >
           <span className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent transition-transform duration-300 group-hover:scale-105">
-            DEV
+            {brandText}
           </span>
         </div>
 
@@ -59,8 +72,17 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
           })}
         </nav>
 
-        {/* Right dummy spacer for perfect center alignment on desktop */}
-        <div className="w-8 sm:w-12" />
+        {/* Right: CMS Admin Button */}
+        <div className="flex items-center">
+          <button
+            onClick={onNavigateAdmin}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white border border-slate-200/80 text-xs font-semibold text-slate-700 hover:text-indigo-600 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+            title="Open Admin CMS Dashboard"
+          >
+            <Database className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="hidden sm:inline">CMS Admin</span>
+          </button>
+        </div>
       </div>
     </header>
   );

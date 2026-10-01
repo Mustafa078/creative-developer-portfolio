@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowLeft, ArrowRight, ExternalLink, Sparkles } from 'lucide-react';
-import { projects } from '../data';
+import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
+import { usePortfolio } from '../context/PortfolioContext';
 import { ProjectItem } from '../types';
 
 interface RotaryCarouselProps {
@@ -8,20 +8,36 @@ interface RotaryCarouselProps {
 }
 
 export const RotaryCarousel: React.FC<RotaryCarouselProps> = ({ onSelectProject }) => {
+  const { projects: allProjects, loading } = usePortfolio();
+
+  // If there are featured projects, display them; otherwise display all projects
+  const displayProjects = allProjects.filter((p) => p.featured).length > 0
+    ? allProjects.filter((p) => p.featured)
+    : allProjects;
+
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const startXRef = useRef<number>(0);
   const dragDistanceRef = useRef<number>(0);
 
-  const totalProjects = projects.length;
+  const totalProjects = displayProjects.length;
 
   const nextSlide = useCallback(() => {
+    if (totalProjects === 0) return;
     setActiveIndex((prev) => (prev + 1) % totalProjects);
   }, [totalProjects]);
 
   const prevSlide = useCallback(() => {
+    if (totalProjects === 0) return;
     setActiveIndex((prev) => (prev - 1 + totalProjects) % totalProjects);
   }, [totalProjects]);
+
+  // Adjust activeIndex if totalProjects changes
+  useEffect(() => {
+    if (activeIndex >= totalProjects && totalProjects > 0) {
+      setActiveIndex(0);
+    }
+  }, [totalProjects, activeIndex]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -72,21 +88,35 @@ export const RotaryCarousel: React.FC<RotaryCarouselProps> = ({ onSelectProject 
     }
   };
 
+  if (loading && displayProjects.length === 0) {
+    return (
+      <div className="w-full h-80 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (displayProjects.length === 0) {
+    return (
+      <section className="w-full max-w-7xl mx-auto px-4 py-12 text-center text-slate-500">
+        <p>No featured projects found in MongoDB. Use the Admin CMS to add your work.</p>
+      </section>
+    );
+  }
+
   // Calculate 3D transformation for each card relative to active index
   const getCardTransform = (index: number) => {
-    // Relative offset [-2, -1, 0, 1, 2]
     let offset = (index - activeIndex) % totalProjects;
     if (offset > totalProjects / 2) offset -= totalProjects;
     if (offset < -totalProjects / 2) offset += totalProjects;
 
     const isActive = offset === 0;
     const isAdjacent = Math.abs(offset) === 1;
-    const isDistant = Math.abs(offset) >= 2;
 
     // Curved arc calculations
-    const rotateY = offset * -28; // Degree of rotation along cylinder
-    const translateX = offset * 280; // Horizontal spread in px
-    const translateZ = isActive ? 120 : isAdjacent ? -40 : -180; // Depth in px
+    const rotateY = offset * -28;
+    const translateX = offset * 280;
+    const translateZ = isActive ? 120 : isAdjacent ? -40 : -180;
     const scale = isActive ? 1.05 : isAdjacent ? 0.88 : 0.74;
     const opacity = isActive ? 1 : isAdjacent ? 0.75 : 0.45;
     const zIndex = 30 - Math.abs(offset) * 10;
@@ -121,12 +151,12 @@ export const RotaryCarousel: React.FC<RotaryCarouselProps> = ({ onSelectProject 
         className="relative h-[380px] sm:h-[440px] w-full flex items-center justify-center cursor-grab active:cursor-grabbing"
         style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
       >
-        {projects.map((project, index) => {
+        {displayProjects.map((project, index) => {
           const { style, isActive } = getCardTransform(index);
 
           return (
             <div
-              key={project.id}
+              key={project.id || index}
               id={`carousel-card-${project.id}`}
               onClick={() => {
                 if (isActive) {
@@ -189,7 +219,7 @@ export const RotaryCarousel: React.FC<RotaryCarouselProps> = ({ onSelectProject 
 
                 {/* Tech Stack Badges */}
                 <div className="flex flex-wrap gap-1.5">
-                  {project.tags.map((tag, tIdx) => (
+                  {(project.tags || []).map((tag, tIdx) => (
                     <span
                       key={tIdx}
                       className="px-2.5 py-0.5 text-[11px] font-medium rounded-lg bg-slate-800/90 text-slate-300 border border-slate-700/60 backdrop-blur-md"
@@ -204,23 +234,27 @@ export const RotaryCarousel: React.FC<RotaryCarouselProps> = ({ onSelectProject 
         })}
 
         {/* Carousel Navigation Buttons */}
-        <button
-          id="carousel-btn-prev"
-          aria-label="Previous Project"
-          onClick={prevSlide}
-          className="absolute left-2 sm:left-4 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white shadow-lg border border-slate-700/60 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-md"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
+        {totalProjects > 1 && (
+          <>
+            <button
+              id="carousel-btn-prev"
+              aria-label="Previous Project"
+              onClick={prevSlide}
+              className="absolute left-2 sm:left-4 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white shadow-lg border border-slate-700/60 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-md"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
 
-        <button
-          id="carousel-btn-next"
-          aria-label="Next Project"
-          onClick={nextSlide}
-          className="absolute right-2 sm:right-4 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white shadow-lg border border-slate-700/60 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-md"
-        >
-          <ArrowRight className="w-4 h-4" />
-        </button>
+            <button
+              id="carousel-btn-next"
+              aria-label="Next Project"
+              onClick={nextSlide}
+              className="absolute right-2 sm:right-4 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white shadow-lg border border-slate-700/60 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer backdrop-blur-md"
+            >
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Curved Rotary Platform Base */}
@@ -230,21 +264,23 @@ export const RotaryCarousel: React.FC<RotaryCarouselProps> = ({ onSelectProject 
         <div className="w-[70%] max-w-2xl h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent -mt-4" />
 
         {/* Rotary Pagination Dots */}
-        <div id="carousel-dots" className="flex items-center gap-2 mt-4">
-          {projects.map((_, idx) => (
-            <button
-              key={idx}
-              id={`carousel-dot-${idx}`}
-              onClick={() => setActiveIndex(idx)}
-              aria-label={`Go to slide ${idx + 1}`}
-              className={`transition-all duration-300 rounded-full cursor-pointer ${
-                activeIndex === idx
-                  ? 'w-6 h-2 bg-indigo-600'
-                  : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'
-              }`}
-            />
-          ))}
-        </div>
+        {totalProjects > 1 && (
+          <div id="carousel-dots" className="flex items-center gap-2 mt-4">
+            {displayProjects.map((_, idx) => (
+              <button
+                key={idx}
+                id={`carousel-dot-${idx}`}
+                onClick={() => setActiveIndex(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  activeIndex === idx
+                    ? 'w-6 h-2 bg-indigo-600'
+                    : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

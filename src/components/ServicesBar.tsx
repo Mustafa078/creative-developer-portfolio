@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Code2, Layout, Server, PenTool, CheckCircle2, ChevronRight, X } from 'lucide-react';
-import { services } from '../data';
+import { Code2, Layout, Server, PenTool, CheckCircle2, X } from 'lucide-react';
+import { usePortfolio } from '../context/PortfolioContext';
 import { ServiceItem } from '../types';
 
 export const ServicesBar: React.FC = () => {
+  const { services } = usePortfolio();
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
 
   const getIcon = (iconName: string) => {
@@ -35,6 +36,8 @@ export const ServicesBar: React.FC = () => {
         return 'bg-slate-50 border-slate-100';
     }
   };
+
+  if (!services || services.length === 0) return null;
 
   return (
     <section id="services-bar-section" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-6">
@@ -111,7 +114,7 @@ export const ServicesBar: React.FC = () => {
                 Core Competencies & Deliverables
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {selectedService.tags.map((tag, idx) => (
+                {(selectedService.tags || []).map((tag, idx) => (
                   <div
                     key={idx}
                     className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs font-medium text-slate-700"

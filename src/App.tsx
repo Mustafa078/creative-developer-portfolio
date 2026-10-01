@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { PortfolioProvider } from './context/PortfolioContext';
 import { AtomicCanvas } from './components/AtomicCanvas';
 import { Navbar } from './components/Navbar';
 import { ServicesBar } from './components/ServicesBar';
@@ -9,16 +10,53 @@ import { ProjectDetailModal } from './components/ProjectDetailModal';
 import { ContactModal } from './components/ContactModal';
 import { ResumeModal } from './components/ResumeModal';
 import { Footer } from './components/Footer';
+import { AdminDashboard } from './components/AdminDashboard';
 import { ProjectItem } from './types';
 
-export default function App() {
+function PortfolioApp() {
+  const [isAdminView, setIsAdminView] = useState<boolean>(() => {
+    return window.location.pathname === '/admin' || window.location.hash === '#admin';
+  });
   const [activeSection, setActiveSection] = useState<string>('home');
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState<boolean>(false);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState<boolean>(false);
 
+  // Sync routing on URL changes
+  useEffect(() => {
+    const handleLocationChange = () => {
+      if (window.location.pathname === '/admin' || window.location.hash === '#admin') {
+        setIsAdminView(true);
+      } else {
+        setIsAdminView(false);
+      }
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
+
+  const navigateToAdmin = () => {
+    window.history.pushState({}, '', '/admin');
+    setIsAdminView(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const navigateToHome = () => {
+    window.history.pushState({}, '', '/');
+    setIsAdminView(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Smooth scroll handler for nav items
   const handleNavigate = (sectionId: string) => {
+    if (isAdminView) {
+      navigateToHome();
+    }
     setActiveSection(sectionId);
 
     if (sectionId === 'home') {
@@ -37,6 +75,8 @@ export default function App() {
 
   // Scroll listener to update active section indicator
   useEffect(() => {
+    if (isAdminView) return;
+
     const handleScroll = () => {
       const scrollY = window.scrollY;
       const projectsEl = document.getElementById('projects-carousel-section');
@@ -56,7 +96,11 @@ export default function App() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isAdminView]);
+
+  if (isAdminView) {
+    return <AdminDashboard onNavigateHome={navigateToHome} />;
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-[#f8fafc] text-slate-800 font-sans selection:bg-indigo-500 selection:text-white overflow-x-hidden">
@@ -76,7 +120,11 @@ export default function App() {
       <AtomicCanvas interactive={true} className="z-0" />
 
       {/* Top Navbar */}
-      <Navbar activeSection={activeSection} onNavigate={handleNavigate} />
+      <Navbar
+        activeSection={activeSection}
+        onNavigate={handleNavigate}
+        onNavigateAdmin={navigateToAdmin}
+      />
 
       {/* Main Vertical Content Flow */}
       <main className="relative z-10 flex flex-col">
@@ -100,7 +148,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer onNavigateAdmin={navigateToAdmin} />
 
       {/* Modals */}
       <ProjectDetailModal
@@ -118,5 +166,13 @@ export default function App() {
         onClose={() => setIsResumeModalOpen(false)}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <PortfolioProvider>
+      <PortfolioApp />
+    </PortfolioProvider>
   );
 }

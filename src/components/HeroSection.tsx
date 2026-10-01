@@ -1,6 +1,6 @@
 import React from 'react';
-import { ArrowRight, Download, Github, Linkedin, Twitter } from 'lucide-react';
-import { personalInfo } from '../data';
+import { ArrowRight, Download, Github, Linkedin, Twitter, Dribbble, ExternalLink } from 'lucide-react';
+import { usePortfolio } from '../context/PortfolioContext';
 
 interface HeroSectionProps {
   onViewWork: () => void;
@@ -8,6 +8,32 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onViewWork, onDownloadCV }) => {
+  const { profile } = usePortfolio();
+
+  if (!profile) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 py-20 flex justify-center items-center">
+        <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  const getSocialIcon = (iconName: string) => {
+    switch (iconName?.toLowerCase()) {
+      case 'github':
+        return <Github className="w-5 h-5" />;
+      case 'linkedin':
+        return <Linkedin className="w-5 h-5" />;
+      case 'twitter':
+      case 'x':
+        return <Twitter className="w-5 h-5" />;
+      case 'dribbble':
+        return <Dribbble className="w-5 h-5" />;
+      default:
+        return <ExternalLink className="w-5 h-5" />;
+    }
+  };
+
   return (
     <section id="hero-section" className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8 sm:pb-12">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
@@ -21,21 +47,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onViewWork, onDownload
             {/* Small round avatar icon */}
             <div className="relative w-6 h-6 rounded-full overflow-hidden ring-1.5 ring-indigo-500/30 flex-shrink-0 bg-slate-950">
               <img
-                src={personalInfo.avatar}
-                alt="Developer Avatar"
+                src={profile.avatar}
+                alt={profile.name}
                 className="w-full h-full object-cover"
               />
             </div>
 
             <span id="hero-greeting" className="text-xs sm:text-sm font-semibold text-slate-800">
-              {personalInfo.greeting}
+              {profile.greeting}
             </span>
 
             <span className="text-slate-300 text-xs">•</span>
 
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              Available for work
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              {profile.status || 'Available for work'}
             </span>
           </div>
 
@@ -44,12 +70,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onViewWork, onDownload
             id="hero-headline"
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-950 tracking-tight leading-[1.12]"
           >
-            Creative Developer<br />
-            Building{' '}
+            {profile.titlePrefix || 'Creative Developer Building'}{' '}
             <span className="bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Digital
+              {profile.titleHighlight || 'Digital'}
             </span>{' '}
-            Experiences
+            {profile.titleSuffix || 'Experiences'}
           </h1>
 
           {/* Tagline */}
@@ -57,7 +82,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onViewWork, onDownload
             id="hero-tagline"
             className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl font-normal"
           >
-            {personalInfo.tagline}
+            {profile.tagline}
           </p>
 
           {/* Action CTAs */}
@@ -84,7 +109,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onViewWork, onDownload
           </div>
         </div>
 
-        {/* Right Column (lg:col-span-5): Profile Card matching uploaded reference */}
+        {/* Right Column (lg:col-span-5): Profile Card */}
         <div className="lg:col-span-5 w-full flex items-center justify-center lg:justify-end relative py-4 lg:py-0">
           <div
             id="hero-profile-card"
@@ -96,8 +121,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onViewWork, onDownload
                 <div className="w-full h-full rounded-full overflow-hidden bg-slate-950">
                   <img
                     id="hero-card-avatar"
-                    src={personalInfo.avatar}
-                    alt="Developer Avatar"
+                    src={profile.avatar}
+                    alt={profile.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
@@ -110,46 +135,36 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onViewWork, onDownload
 
             {/* Name */}
             <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-              {personalInfo.name}
+              {profile.name}
             </h3>
 
             {/* Role / Subtitle */}
             <p className="text-sm font-medium text-slate-500 mt-1">
-              Creative Engineer
+              {profile.titlePrefix ? `${profile.titlePrefix.split(' ')[0]} Developer` : 'Creative Engineer'}
             </p>
 
             {/* Social Links Row */}
             <div className="flex items-center justify-center gap-3.5 mt-5 pt-4 border-t border-slate-100 w-full text-slate-700">
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noreferrer"
-                className="p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors"
-                aria-label="GitHub"
-                title="GitHub"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noreferrer"
-                className="p-2 rounded-xl text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                aria-label="LinkedIn"
-                title="LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href="https://x.com"
-                target="_blank"
-                rel="noreferrer"
-                className="p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors"
-                aria-label="X (Twitter)"
-                title="X (Twitter)"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
+              {(profile.socialLinks && profile.socialLinks.length > 0
+                ? profile.socialLinks
+                : [
+                    { platform: 'GitHub', url: 'https://github.com', icon: 'Github', handle: '@github' },
+                    { platform: 'LinkedIn', url: 'https://linkedin.com', icon: 'Linkedin', handle: 'in/dev' },
+                    { platform: 'Twitter', url: 'https://x.com', icon: 'Twitter', handle: '@twitter' },
+                  ]
+              ).map((social, idx) => (
+                <a
+                  key={idx}
+                  href={social.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 rounded-xl text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                  aria-label={social.platform}
+                  title={social.platform}
+                >
+                  {getSocialIcon(social.icon)}
+                </a>
+              ))}
             </div>
           </div>
         </div>
