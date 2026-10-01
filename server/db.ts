@@ -40,6 +40,11 @@ export const memoryStore = {
 };
 
 export async function connectDB(): Promise<boolean> {
+  if (mongoose.connection.readyState === 1) {
+    isMongoConnected = true;
+    return true;
+  }
+
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     console.log('[Database] Notice: No MONGODB_URI provided in environment. Running in memory-backed mode.');
