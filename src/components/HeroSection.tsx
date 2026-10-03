@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Download, Github, Linkedin, Twitter, Dribbble, ExternalLink } from 'lucide-react';
+import { ArrowRight, Download, Github, Linkedin, Twitter, Dribbble, Instagram, Globe, Mail, Youtube, ExternalLink } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 
 interface HeroSectionProps {
@@ -29,6 +29,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onViewWork, onDownload
         return <Twitter className="w-5 h-5" />;
       case 'dribbble':
         return <Dribbble className="w-5 h-5" />;
+      case 'instagram':
+        return <Instagram className="w-5 h-5" />;
+      case 'globe':
+      case 'website':
+      case 'portfolio':
+        return <Globe className="w-5 h-5" />;
+      case 'youtube':
+        return <Youtube className="w-5 h-5" />;
+      case 'mail':
+      case 'email':
+        return <Mail className="w-5 h-5" />;
       default:
         return <ExternalLink className="w-5 h-5" />;
     }

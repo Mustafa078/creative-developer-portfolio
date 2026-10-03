@@ -95,14 +95,21 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       })
         .then((res) => {
           if (res.ok) return res.json();
-          throw new Error('Token invalid');
+          if (res.status === 401) {
+            throw new Error('UNAUTHORIZED');
+          }
+          return null;
         })
         .then((data) => {
-          setAdminUser({ email: data.email });
-          localStorage.setItem('portfolio_cms_admin_email', data.email);
+          if (data?.email) {
+            setAdminUser({ email: data.email });
+            localStorage.setItem('portfolio_cms_admin_email', data.email);
+          }
         })
-        .catch(() => {
-          setAdminToken(null);
+        .catch((err) => {
+          if (err.message === 'UNAUTHORIZED') {
+            setAdminToken(null);
+          }
         });
     }
   }, [adminToken]);

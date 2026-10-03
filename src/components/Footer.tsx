@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUp, Database } from 'lucide-react';
+import { ArrowUp, Database, Github, Linkedin, Twitter, Dribbble, Instagram, Globe, Mail, ExternalLink } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 
 export const Footer: React.FC<{ onNavigateAdmin?: () => void }> = ({ onNavigateAdmin }) => {
@@ -9,13 +9,54 @@ export const Footer: React.FC<{ onNavigateAdmin?: () => void }> = ({ onNavigateA
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const getSocialIcon = (iconName: string) => {
+    switch (iconName?.toLowerCase()) {
+      case 'github':
+        return <Github className="w-4 h-4" />;
+      case 'linkedin':
+        return <Linkedin className="w-4 h-4" />;
+      case 'twitter':
+      case 'x':
+        return <Twitter className="w-4 h-4" />;
+      case 'dribbble':
+        return <Dribbble className="w-4 h-4" />;
+      case 'instagram':
+        return <Instagram className="w-4 h-4" />;
+      case 'globe':
+      case 'website':
+        return <Globe className="w-4 h-4" />;
+      case 'mail':
+        return <Mail className="w-4 h-4" />;
+      default:
+        return <ExternalLink className="w-4 h-4" />;
+    }
+  };
+
   return (
     <footer className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
       <div className="pt-8 border-t border-slate-200/70 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
           <span className="font-semibold text-slate-700">{profile?.name || 'Developer'}</span>
-          <span>•</span>
-          <span>Full-Stack Portfolio CMS with MongoDB & React</span>
+          <span className="hidden sm:inline">•</span>
+          <span>Full-Stack Portfolio CMS</span>
+
+          {profile?.socialLinks && profile.socialLinks.length > 0 && (
+            <div className="flex items-center gap-2 mt-2 sm:mt-0 sm:ml-2 pl-0 sm:pl-3 sm:border-l sm:border-slate-200">
+              {profile.socialLinks.map((social, idx) => (
+                <a
+                  key={idx}
+                  href={social.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+                  title={social.platform}
+                  aria-label={social.platform}
+                >
+                  {getSocialIcon(social.icon)}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">

@@ -21,9 +21,13 @@ import {
   X,
   KeyRound,
   ShieldCheck,
+  Share2,
+  Globe,
+  ExternalLink,
+  Link2,
 } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
-import { ProjectItem, SkillItem, ExperienceItem, ContactMessage } from '../types';
+import { ProjectItem, SkillItem, ExperienceItem, ContactMessage, SocialLink } from '../types';
 
 export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNavigateHome }) => {
   const {
@@ -90,6 +94,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
     status: '',
     avatar: '',
     resumeUrl: '',
+    socialLinks: [] as SocialLink[],
   });
 
   useEffect(() => {
@@ -107,9 +112,53 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
         status: profile.status || 'Available for work',
         avatar: profile.avatar || '',
         resumeUrl: profile.resumeUrl || '',
+        socialLinks:
+          profile.socialLinks && profile.socialLinks.length > 0
+            ? profile.socialLinks
+            : [
+                { platform: 'LinkedIn', url: 'https://linkedin.com', icon: 'Linkedin', handle: 'in/dev' },
+                { platform: 'GitHub', url: 'https://github.com', icon: 'Github', handle: '@github' },
+                { platform: 'Twitter / X', url: 'https://x.com', icon: 'Twitter', handle: '@dev' },
+              ],
       });
     }
   }, [profile]);
+
+  // Social Links management helpers
+  const handleAddSocialLink = () => {
+    setProfileForm((prev) => ({
+      ...prev,
+      socialLinks: [
+        ...prev.socialLinks,
+        { platform: 'LinkedIn', url: 'https://linkedin.com/in/', icon: 'Linkedin', handle: '' },
+      ],
+    }));
+  };
+
+  const handleUpdateSocialLink = (index: number, field: keyof SocialLink, value: string) => {
+    setProfileForm((prev) => {
+      const updated = [...prev.socialLinks];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, socialLinks: updated };
+    });
+  };
+
+  const handleDeleteSocialLink = (index: number) => {
+    setProfileForm((prev) => ({
+      ...prev,
+      socialLinks: prev.socialLinks.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleQuickAddSocial = (platform: string, urlPrefix: string, icon: string) => {
+    setProfileForm((prev) => ({
+      ...prev,
+      socialLinks: [
+        ...prev.socialLinks,
+        { platform, url: urlPrefix, icon, handle: '' },
+      ],
+    }));
+  };
 
   // Project Modal / Edit state
   const [editingProject, setEditingProject] = useState<ProjectItem | null>(null);
@@ -983,6 +1032,176 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                           className="w-full h-full object-cover"
                         />
                       </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Social Media & Contact Links Section */}
+                <div className="pt-6 border-t border-slate-800/80">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Share2 className="w-4 h-4 text-indigo-400" />
+                        <span>Social Media & Contact Links</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Customize your LinkedIn, GitHub, Twitter, and custom contact links. These appear on your Hero profile card, Footer, and Contact window.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddSocialLink}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-500/40 text-indigo-300 hover:text-white text-xs font-semibold transition-all cursor-pointer w-fit"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Social Link</span>
+                    </button>
+                  </div>
+
+                  {/* Quick Add Presets */}
+                  <div className="flex flex-wrap items-center gap-1.5 mb-4 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mr-1">Quick Add:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickAddSocial('LinkedIn', 'https://linkedin.com/in/', 'Linkedin')}
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer"
+                    >
+                      + LinkedIn
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickAddSocial('GitHub', 'https://github.com/', 'Github')}
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer"
+                    >
+                      + GitHub
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickAddSocial('Twitter / X', 'https://x.com/', 'Twitter')}
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer"
+                    >
+                      + Twitter / X
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickAddSocial('Instagram', 'https://instagram.com/', 'Instagram')}
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer"
+                    >
+                      + Instagram
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickAddSocial('YouTube', 'https://youtube.com/@', 'Youtube')}
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer"
+                    >
+                      + YouTube
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickAddSocial('Website', 'https://', 'Globe')}
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer"
+                    >
+                      + Website / Blog
+                    </button>
+                  </div>
+
+                  {/* List of Social Links */}
+                  <div className="space-y-3">
+                    {profileForm.socialLinks.length === 0 ? (
+                      <div className="p-4 rounded-xl border border-dashed border-slate-800 text-center text-xs text-slate-400">
+                        No social links configured yet. Use the Quick Add buttons above to add your LinkedIn or GitHub!
+                      </div>
+                    ) : (
+                      profileForm.socialLinks.map((social, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 transition-all hover:border-slate-700"
+                        >
+                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 flex-1">
+                            {/* Platform Name */}
+                            <div className="sm:col-span-3">
+                              <label className="block text-[10px] text-slate-400 mb-0.5">Platform</label>
+                              <input
+                                type="text"
+                                value={social.platform}
+                                onChange={(e) => handleUpdateSocialLink(idx, 'platform', e.target.value)}
+                                placeholder="LinkedIn"
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                              />
+                            </div>
+
+                            {/* Destination URL */}
+                            <div className="sm:col-span-4">
+                              <label className="block text-[10px] text-slate-400 mb-0.5">Profile URL</label>
+                              <div className="relative">
+                                <Link2 className="w-3 h-3 text-slate-500 absolute left-2 top-2.5" />
+                                <input
+                                  type="url"
+                                  value={social.url}
+                                  onChange={(e) => handleUpdateSocialLink(idx, 'url', e.target.value)}
+                                  placeholder="https://linkedin.com/in/username"
+                                  className="w-full pl-6 pr-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Handle / Label */}
+                            <div className="sm:col-span-3">
+                              <label className="block text-[10px] text-slate-400 mb-0.5">Handle / Username</label>
+                              <input
+                                type="text"
+                                value={social.handle || ''}
+                                onChange={(e) => handleUpdateSocialLink(idx, 'handle', e.target.value)}
+                                placeholder="in/username"
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                              />
+                            </div>
+
+                            {/* Icon Choice */}
+                            <div className="sm:col-span-2">
+                              <label className="block text-[10px] text-slate-400 mb-0.5">Icon</label>
+                              <select
+                                value={social.icon || 'ExternalLink'}
+                                onChange={(e) => handleUpdateSocialLink(idx, 'icon', e.target.value)}
+                                className="w-full px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                              >
+                                <option value="Linkedin">LinkedIn</option>
+                                <option value="Github">GitHub</option>
+                                <option value="Twitter">Twitter / X</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Youtube">YouTube</option>
+                                <option value="Dribbble">Dribbble</option>
+                                <option value="Globe">Website / Blog</option>
+                                <option value="Mail">Email</option>
+                                <option value="ExternalLink">General Link</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Actions: Test Link & Delete */}
+                          <div className="flex items-center gap-1.5 justify-end sm:pt-4">
+                            {social.url && (
+                              <a
+                                href={social.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                                title="Test link"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSocialLink(idx)}
+                              className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+                              title="Delete link"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
                     )}
                   </div>
                 </div>

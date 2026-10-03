@@ -92,6 +92,32 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
               </p>
             </div>
 
+            {profile?.socialLinks && profile.socialLinks.length > 0 && (
+              <div className="mb-4 p-2.5 rounded-2xl bg-indigo-50/70 border border-indigo-100/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-1.5 text-slate-600 text-[11px]">
+                  <Mail className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Email:</span>
+                  <a href={`mailto:${profile.email}`} className="font-semibold text-indigo-600 hover:underline">
+                    {profile.email}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className="text-slate-400">Social:</span>
+                  {profile.socialLinks.map((s, idx) => (
+                    <a
+                      key={idx}
+                      href={s.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-indigo-600 hover:text-indigo-800 underline hover:no-underline"
+                    >
+                      {s.platform}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {submitError && (
               <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
