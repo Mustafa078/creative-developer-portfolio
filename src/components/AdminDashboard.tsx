@@ -79,6 +79,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
   // Contact messages state
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   // Profile Form state
   const [profileForm, setProfileForm] = useState({
@@ -272,6 +273,26 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
       showToast('Admin CMS unlocked successfully!');
     } else {
       setAuthError(result.error || 'Invalid email or password');
+    }
+  };
+
+  const handleEmergencyReset = async () => {
+    try {
+      setIsResettingPassword(true);
+      const res = await fetch('/api/admin/reset-password', { method: 'POST' });
+      const data = await res.json();
+      setIsResettingPassword(false);
+      if (res.ok && data.success) {
+        setEmailInput(data.email || 'm.faizan12397@gmail.com');
+        setPasswordInput('admin123');
+        setAuthError(null);
+        showToast('Password reset to admin123! You can now sign in.');
+      } else {
+        setAuthError('Could not reset password automatically.');
+      }
+    } catch {
+      setIsResettingPassword(false);
+      setAuthError('Network error resetting password.');
     }
   };
 
@@ -622,27 +643,29 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
               className="text-[11px] text-slate-400 hover:text-indigo-300 transition-colors flex items-center gap-1 cursor-pointer mx-auto"
             >
               <KeyRound className="w-3.5 h-3.5 text-indigo-400" />
-              <span>{showSetupHint ? 'Hide initial setup credentials' : 'First time signing in? Click for default credentials'}</span>
+              <span>{showSetupHint ? 'Hide login help' : 'Need login credentials help? Click here'}</span>
             </button>
 
             {showSetupHint && (
               <div className="mt-2 p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 text-xs text-indigo-200 animate-fade-in">
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Default Email: <code className="text-indigo-300 font-mono font-bold bg-slate-900 px-1 py-0.5 rounded">admin@portfolio.com</code>
+                  Registered Email: <code className="text-indigo-300 font-mono font-bold bg-slate-900 px-1 py-0.5 rounded">m.faizan12397@gmail.com</code>
                   <br />
-                  Default Password: <code className="text-indigo-300 font-mono font-bold bg-slate-900 px-1 py-0.5 rounded">admin123</code>
+                  Alternative Email: <code className="text-indigo-300 font-mono font-bold bg-slate-900 px-1 py-0.5 rounded">admin@portfolio.com</code>
+                  <br />
+                  Password: <code className="text-indigo-300 font-mono font-bold bg-slate-900 px-1 py-0.5 rounded">admin123</code>
                 </p>
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-indigo-500/20">
-                  <span className="text-[10px] text-slate-400">Change these in CMS Settings!</span>
+                  <span className="text-[10px] text-slate-400">Ready to test</span>
                   <button
                     type="button"
                     onClick={() => {
-                      setEmailInput('admin@portfolio.com');
+                      setEmailInput('m.faizan12397@gmail.com');
                       setPasswordInput('admin123');
                     }}
                     className="text-[11px] text-indigo-300 hover:text-white font-semibold underline cursor-pointer"
                   >
-                    Auto-fill
+                    Auto-fill My Credentials
                   </button>
                 </div>
               </div>
@@ -666,7 +689,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                 required
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
-                placeholder="admin@portfolio.com"
+                placeholder="m.faizan12397@gmail.com"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               />
             </div>
@@ -692,6 +715,17 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
             >
               {isAuthenticating ? 'Signing In...' : 'Sign In to CMS Dashboard'}
             </button>
+
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={handleEmergencyReset}
+                disabled={isResettingPassword}
+                className="text-[11px] text-slate-400 hover:text-indigo-300 transition-colors underline cursor-pointer"
+              >
+                {isResettingPassword ? 'Resetting password...' : 'Forgot password? Click here to reset to admin123'}
+              </button>
+            </div>
           </form>
         </div>
       </div>
